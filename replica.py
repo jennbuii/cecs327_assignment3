@@ -10,6 +10,7 @@ class Replica:
         self.max_seen = {rid: -1 for rid in self.Rk} # progress tracking
         self.store = {} #key-value replicated store
         self.replicas = {} # mapping from replica id to replica object
+        self.delivered_log = [] # ordered list of update_ids in delivery order
 
     def apply_operation(self, op):
         if op["op"] == "put": # put(k,v)
@@ -36,6 +37,7 @@ class Replica:
             if can_deliver:
                 self.holdback_queue.pop(0)
                 self.apply_operation(m["op"])
+                self.delivered_log.append(m["update_id"])
             else:
                 break
 
@@ -55,6 +57,7 @@ class Replica:
         ack = ACK(m["update_id"], ts, self.k)
         for rid in self.replicas:
             self.replicas[rid].handle_ACK(ack)
+        self.deliver()  # handles case where ACKs arrived before this TOBCAST
 
     def handle_request(self, op):
         self.clock_i += 1 # increments Lamport clock before sending TOBCAST
