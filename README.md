@@ -1,4 +1,4 @@
-# CECS 327 – Assignment 3: Replicated Key-Value Store with Total-Order Multicast
+# CECS 327 – Assignment 3: Total-Order Multicast for Replication
 
 ## Files
 
